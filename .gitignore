@@ -1,0 +1,18 @@
+# Local configuration and credentials
+backend/.env
+
+# Local database and private participant files
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/data/private_uploads/
+
+# Python runtime
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+
+# Local logs and OS files
+*.log
+Thumbs.db
+.DS_Store
