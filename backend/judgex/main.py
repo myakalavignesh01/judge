@@ -172,7 +172,7 @@ bearer = HTTPBearer(auto_error=False)
 UPLOAD_ROOT = Path(settings.upload_root).expanduser() if settings.upload_root else Path(__file__).resolve().parent.parent / "data" / "private_uploads"
 UPLOAD_LIMIT = 25 * 1024 * 1024
 ALLOWED_FILES = {".pdf", ".docx", ".pptx", ".png", ".jpg", ".jpeg", ".webp", ".txt", ".md", ".mp4", ".webm", ".wav", ".mp3", ".m4a", ".mpeg", ".mpga", ".ogg"}
-FRONTEND_FILES = {"", "index.html", "styles.css", "pitch.css", "auth.css", "app.js", "phase2.js"}
+FRONTEND_FILES = {"", "index.html", "styles.css", "pitch.css", "auth.css", "palette.css", "app.js", "phase2.js"}
 
 
 def current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer), db: Session = Depends(get_db)) -> User:
