@@ -2,16 +2,12 @@ services:
   - type: web
     name: judgex-myakalavignesh01
     runtime: python
-    plan: starter
+    plan: free
     region: singapore
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && python -m uvicorn judgex.main:app --host 0.0.0.0 --port $PORT
     autoDeployTrigger: checksPass
     healthCheckPath: /health
-    disk:
-      name: private-uploads
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -22,7 +18,7 @@ services:
           name: judgex-db
           property: connectionString
       - key: UPLOAD_ROOT
-        value: /var/data/private_uploads
+        value: /tmp/judgex-private-uploads
       - key: PUBLIC_BASE_URL
         fromService:
           type: web
@@ -33,6 +29,10 @@ services:
           type: web
           name: judgex-myakalavignesh01
           envVarKey: RENDER_EXTERNAL_URL
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
       - key: ALLOW_ORGANIZER_SIGNUP
         value: "false"
       - key: BOOTSTRAP_ORGANIZER_NAME
@@ -46,7 +46,7 @@ services:
 
 databases:
   - name: judgex-db
-    plan: 0.1c-256mb
+    plan: free
     region: singapore
     databaseName: judgex
     user: judgex
