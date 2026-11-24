@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient
 
-from judgex.database import Base, SessionLocal, engine
+from judgex.config import Settings, settings
+from judgex.database import Base, SessionLocal, engine, normalize_database_url
 from judgex.main import app, dispatch_due_reminders
 from judgex.models import (Document, Hackathon, PitchSession, Rubric, RubricCriterion, Scorecard, Submission, Team,
                            TeamMember, User)
@@ -36,6 +37,34 @@ class PRDWorkflowTests(unittest.TestCase):
     def add_user(self, name, email, role):
         user = User(name=name, email=email, password_hash="test", role=role)
         return user
+
+    def test_render_database_url_google_callback_and_initial_organizer(self):
+        self.assertEqual(normalize_database_url("postgres://u:p@db.example/judgex"),
+            "postgresql+psycopg://u:p@db.example/judgex")
+        self.assertEqual(normalize_database_url("postgresql://u:p@db.example/judgex"),
+            "postgresql+psycopg://u:p@db.example/judgex")
+        self.assertEqual(Settings(public_base_url="https://judge.example").effective_google_redirect_uri,
+            "https://judge.example/api/v1/auth/google/callback")
+
+        original = (settings.bootstrap_organizer_name, settings.bootstrap_organizer_email,
+            settings.bootstrap_organizer_institution, settings.bootstrap_organizer_password)
+        try:
+            settings.bootstrap_organizer_name = "First Organizer"
+            settings.bootstrap_organizer_email = "owner@example.test"
+            settings.bootstrap_organizer_institution = "Launch Institution"
+            settings.bootstrap_organizer_password = "long-test-password"
+            from judgex.main import provision_initial_organizer
+            provision_initial_organizer()
+            provision_initial_organizer()
+            with SessionLocal() as db:
+                account = db.scalar(select(User).where(User.email == "owner@example.test"))
+                self.assertIsNotNone(account)
+                self.assertEqual(account.role, "organizer")
+                self.assertEqual(account.institution.name, "Launch Institution")
+                self.assertEqual(len(db.scalars(select(User).where(User.role == "organizer")).all()), 1)
+        finally:
+            (settings.bootstrap_organizer_name, settings.bootstrap_organizer_email,
+                settings.bootstrap_organizer_institution, settings.bootstrap_organizer_password) = original
 
     def test_rounds_publish_and_become_visible_independently(self):
         with SessionLocal() as db:
