@@ -6,23 +6,23 @@ JudgeX is an evidence-led hackathon judging application. The current build inclu
 
 Follow [the backend setup guide](backend/README.md). On Windows, run `backend/start.ps1`, create an organizer account from a second PowerShell window, then open the URL printed by the startup script. The API serves the frontend.
 
-The startup script prints the actual local URL. Open that URL; do not open `index.html` directly, because a `file://` page cannot use the API or complete Google sign-in. If port 8000 is in use, the script selects an available port from 8000–8010.
+The startup script prints the actual local URL. Open that URL; do not open `index.html` directly, because a `file://` page cannot use the API. If port 8000 is in use, the script selects an available port from 8000–8010.
 
 For a read-only sample preview, open `index.html` and choose **View sample workspace (preview)**. The preview uses local sample data; real login and saved changes require the API server.
 
 ## Deploy to Render
 
-The repository includes [`render.yaml`](render.yaml), a **free-tier demo Blueprint** with one Python web service and a free PostgreSQL database. Use **New → Blueprint** in Render and connect this repository. During setup, enter an organizer name, Gmail address, and a strong password of at least 10 characters. That account is created only when no account with that email or organizer account already exists. After the first successful deployment, remove the `BOOTSTRAP_ORGANIZER_*` values from the service environment.
+The repository includes [`render.yaml`](render.yaml), a **free-tier demo Blueprint** with one Python web service and a free PostgreSQL database. Use **New → Blueprint** in Render and connect this repository. During setup, enter the organizer's Gmail address and a password of at least 10 characters. The account is created with the display name “Organizer” only when no account with that email or organizer account already exists. After the first successful deployment, remove the `BOOTSTRAP_ORGANIZER_*` values from the service environment.
 
 This free configuration is for testing only. Free web services sleep after 15 minutes without traffic and their local filesystem is temporary, so uploaded documents and pitch recordings may disappear after a restart or sleep. Free Render Postgres expires 30 days after creation, so JudgeX account and event data will not remain available indefinitely. The Blueprint intentionally has no persistent disk and selects only free plans.
 
-To enable Google sign-in, create a Google OAuth **Web application** client after Render assigns the service URL. Register the exact service URL as an authorized JavaScript origin and `<service-url>/api/v1/auth/google/callback` as an authorized redirect URI. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` as private Render environment variables; never put the client secret in GitHub or browser code. Use the same Gmail address as the initial organizer account to sign in with organizer access. Set optional `OPENAI_API_KEY`, SMTP, and GitHub credentials in Render only when you enable those integrations.
+Sign in with your Gmail address and the JudgeX password you chose during setup. This is ordinary email/password login; your Google account password is not used. No OAuth client or Google credentials are required. Set optional `OPENAI_API_KEY`, SMTP, and GitHub credentials in Render only when you enable those integrations.
 
 After deployment, verify `<service-url>/health` returns `{"status":"ok"}` and open `<service-url>/` to sign in. The Blueprint deploys new commits after the GitHub Actions checks pass.
 
 ## Available now
 
-- Participant registration, password login, email OTP and reset flows, optional Google OAuth, and role-based access.
+- Participant registration, password login, email OTP and reset flows, and role-based access.
 - Organizer event setup and editing, tracks, deadlines, document requirements, team limits, and registration/judging status transitions.
 - Participant team creation, invite-code joining, leadership transfer, member removal, draft editing, event-scoped document uploads, link checks, and final submission.
 - Private file storage, document extraction and OCR, GitHub README/commit/source retrieval, secret redaction, consent-gated evidence indexing, and local possible-overlap flags for human review.
@@ -34,10 +34,6 @@ After deployment, verify `<service-url>/health` returns `{"status":"ok"}` and op
 
 ## Remaining production work
 
-This is a functional local pilot build, not a production-ready deployment. The automated tests cover round publication, participant visibility, team leadership, institution administration, document-overlap review, and reminder scheduling. The overlap scan only compares text within one event and creates a human-review signal; it does not establish plagiarism. Pitch analysis extracts quoted claims, but it does not perform computer-vision feature verification or external originality research. Production still needs deployment, durable schema migrations, monitoring, load/security review, and a managed database and object store. Live Google sign-in needs OAuth client credentials; OTP and outbound email need SMTP credentials. AI scoring, OCR, embeddings, transcription, and question generation need an OpenAI API key and the relevant participant consent. Put credentials only in `backend/.env`, never in browser code.
-
-### Enable Google sign-in
-
-Create a **Web application** OAuth client in Google Cloud Console. Add the exact local origin and callback URL printed by `backend/start.ps1` to the OAuth client's authorized origins and redirect URIs. Put the client ID and client secret in `backend/.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, then restart JudgeX. You can pin a stable port by setting `$env:JUDGEX_PORT=8000` before starting the backend. Never paste the client secret into the browser or chat.
+This is a functional pilot build, not a production-ready deployment. The automated tests cover round publication, participant visibility, team leadership, institution administration, document-overlap review, and reminder scheduling. The overlap scan only compares text within one event and creates a human-review signal; it does not establish plagiarism. Pitch analysis extracts quoted claims, but it does not perform computer-vision feature verification or external originality research. Production still needs durable schema migrations, monitoring, load/security review, and a managed database and object store. Email OTP and password reset need SMTP credentials. AI scoring, OCR, embeddings, transcription, and question generation need an OpenAI API key and the relevant participant consent. Put credentials only in `backend/.env`, never in browser code.
 
 Use a modern browser with JavaScript enabled. Event, account, team, rubric, submission, and document data are stored by the local API.

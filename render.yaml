@@ -29,14 +29,10 @@ services:
           type: web
           name: judgex-myakalavignesh01
           envVarKey: RENDER_EXTERNAL_URL
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
       - key: ALLOW_ORGANIZER_SIGNUP
         value: "false"
       - key: BOOTSTRAP_ORGANIZER_NAME
-        sync: false
+        value: Organizer
       - key: BOOTSTRAP_ORGANIZER_EMAIL
         sync: false
       - key: BOOTSTRAP_ORGANIZER_INSTITUTION
