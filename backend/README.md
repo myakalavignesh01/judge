@@ -27,6 +27,14 @@ DATABASE_URL=postgresql+psycopg://judgex:your-local-password@localhost:5432/judg
 
 PostgreSQL must be installed or run separately. The API uses SQLAlchemy and psycopg; SQLite is the easiest local start. Before production, set a unique long `JWT_SECRET`, use HTTPS, and configure `FRONTEND_ORIGINS` for exact trusted origins.
 
+## Deploy to Render
+
+The root `render.yaml` Blueprint creates a Python web service, managed PostgreSQL, and a persistent disk for private uploads. In Render, create a Blueprint from this GitHub repository and provide the initial organizer name, email, and a password with at least 10 characters. Use the Gmail address that will authenticate through Google sign-in. The first organizer is created at service startup only if that address and any organizer account are absent; existing participant accounts are never promoted. After verifying the initial organizer can sign in, remove the `BOOTSTRAP_ORGANIZER_*` variables from the service settings.
+
+The Blueprint selects paid compute, database, and disk resources so private uploads and application data persist. Check the current Render dashboard estimate before creating services. Free web services do not support persistent disks, and free Postgres databases expire after 30 days. Render supplies `DATABASE_URL` and `PUBLIC_BASE_URL`; JudgeX adapts Render's Postgres URL to the installed psycopg driver and derives the OAuth callback from the public service URL.
+
+After the first deploy, register the service URL and `<service-url>/api/v1/auth/google/callback` in a Google OAuth Web application. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the Render service's environment settings. Keep optional `OPENAI_API_KEY`, SMTP, and `GITHUB_TOKEN` values in Render's private environment settings as needed; do not commit them.
+
 ## API surface
 
 - `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`
