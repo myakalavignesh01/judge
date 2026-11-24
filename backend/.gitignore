@@ -1,0 +1,6 @@
+.venv/
+.env
+judgex.db
+data/
+__pycache__/
+*.py[cod]
