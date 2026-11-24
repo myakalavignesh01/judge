@@ -1,0 +1,59 @@
+:root {
+  --ink: #202a25;
+  --muted: #748078;
+  --line: #e4e9e5;
+  --bg: #f5f6f4;
+  --green: #466553;
+  --green2: #edf2ee;
+  --lime: #dfe8e1;
+  --orange: #aa8357;
+  --red: #b66e67;
+  --blue: #6d808c;
+  --card: #ffffff;
+  --shadow: 0 8px 24px rgb(31 44 36 / 6%);
+  color-scheme: light;
+}
+
+body { background: var(--bg); color: var(--ink); }
+.sidebar, .topbar, .stat-card, .panel, .table-card, .modal, .podium-card { background: var(--card); }
+.sidebar, .topbar, .profile, .stat-card, .panel, .table-card { border-color: var(--line); }
+.brand-mark, .hero, .auth-brand { background-color: #304b3f; }
+.brand-mark span { color: var(--lime); }
+.hero-art { background: radial-gradient(ellipse at 55% 80%, #526b5a 0%, #3d5d4b 44%, #304b3f 74%); }
+.hero .eyebrow, .auth-brand-foot { color: #c5d2c8; }
+.hero p, .auth-brand p { color: #d7e0d9; }
+.hero .btn { color: #27362d; background: #e8eee9; border-color: #e8eee9; box-shadow: none; }
+.ring, .ring.r2, .ring.r3, .auth-brand:after { border-color: #dfe8e145; }
+.auth-brand:after { box-shadow: 0 0 0 36px #dfe8e11a, 0 0 0 82px #dfe8e10d; }
+.nav-item { color: #68746d; }
+.nav-item:hover, .nav-item.active { background: var(--green2); color: #3e5c49; }
+.nav-item.active > span { color: #3e5c49; }
+.nav-item .alert-count { background: #f3eee5; color: #91734d; }
+.btn { border-color: #dce3de; }
+.btn:hover { border-color: #b9c5bd; }
+.btn-primary, .btn-primary:hover { color: #fff; background: #466553; border-color: #466553; box-shadow: 0 3px 8px rgb(48 75 63 / 12%); }
+.quiet-link, .help-card button, .event-live { color: #4f6d59; }
+.event-live i, .progress i, .score-track i { background: #78917e; }
+.event-logo, .stat-icon, .activity-icon, .checkmark { background: #edf2ee; color: #5d7864; }
+.checkmark.missing, .status.review, .status.draft { background: #f3efe8; color: #8d7555; }
+.status { background: #edf2ee; color: #5a7460; }
+.leader-head { background: #edf2ee; }
+.leader-head p { color: #748078; }
+.podium-card.first { border-color: #dbe4dc; background: #f8faf8; }
+.podium-score, .total { color: #526e59; }
+.form-field input:focus, .form-field textarea:focus, .form-field select:focus { border-color: #93a99a; box-shadow: 0 0 0 3px rgb(70 101 83 / 10%); }
+.auth-gate { background: var(--bg); }
+.auth-tabs button.active { color: #466553; border-bottom-color: #466553; }
+.auth-error { color: #9c5d57; background: #f5ecea; }
+.auth-api-note { background: #edf2ee; color: #68776d; }
+.auth-help code { background: #edf0ee; }
+.pitch-screen { background: #26352d; }
+.pitch-controls .btn-primary { background: #466553; border-color: #466553; }
+.consent-box { background: #f7f8f6; border-color: var(--line); }
+.record-pill { background: #3d302e; color: #e8c7c2; }
+.record-pill i { background: #bb746b; }
+.checkmark.missing { color: #987954; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #82988a;
+  outline-offset: 2px;
+}

@@ -16,3 +16,4 @@ backend/.venv/
 *.log
 Thumbs.db
 .DS_Store
+judgex.db
