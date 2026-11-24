@@ -8,7 +8,13 @@ class Settings(BaseSettings):
     jwt_secret: str = "replace-this-with-a-long-random-secret"
     access_token_minutes: int = 60
     frontend_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
+    public_base_url: str = ""
+    upload_root: str = ""
     allow_organizer_signup: bool = False
+    bootstrap_organizer_name: str = ""
+    bootstrap_organizer_email: str = ""
+    bootstrap_organizer_institution: str = "JudgeX"
+    bootstrap_organizer_password: str = ""
     openai_api_key: str = ""
     openai_base_url: str = "https://api.openai.com/v1"
     openai_text_model: str = "gpt-6.2-astra"
@@ -30,6 +36,12 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.frontend_origins.split(",") if origin.strip()]
+
+    @property
+    def effective_google_redirect_uri(self) -> str:
+        if self.public_base_url:
+            return f"{self.public_base_url.rstrip('/')}/api/v1/auth/google/callback"
+        return self.google_redirect_uri
 
 
 settings = Settings()

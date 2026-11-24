@@ -104,9 +104,38 @@ async def dispatch_due_reminders() -> None:
                     db.commit()
 
 
+def provision_initial_organizer() -> None:
+    """Create the first organizer from private deployment settings, without elevating an existing account."""
+    name = settings.bootstrap_organizer_name.strip()
+    email = settings.bootstrap_organizer_email.strip().lower()
+    password = settings.bootstrap_organizer_password
+    if not name and not email and not password:
+        return
+    if not name or not email or len(password) < 10:
+        raise RuntimeError("Set all BOOTSTRAP_ORGANIZER_* values and use a password of at least 10 characters.")
+    with SessionLocal() as db:
+        existing = db.scalar(select(User.id).where(User.email == email))
+        if existing:
+            return
+        if db.scalar(select(User.id).where(User.role.in_(("organizer", "super_admin")))):
+            return
+        institution_name = settings.bootstrap_organizer_institution.strip() or "JudgeX"
+        institution = db.scalar(select(Institution).where(Institution.name == institution_name))
+        if institution is None:
+            institution = Institution(name=institution_name)
+            db.add(institution)
+            db.flush()
+        account = User(name=name, email=email, password_hash=hash_password(password), role="organizer", institution_id=institution.id)
+        db.add(account)
+        db.flush()
+        audit(db, account, "account.initial_organizer_provisioned", "user", account.id)
+        db.commit()
+
+
 @app.on_event("startup")
 async def start_reminder_worker() -> None:
     global _reminder_worker
+    provision_initial_organizer()
     if _reminder_worker is None or _reminder_worker.done():
         _reminder_worker = asyncio.create_task(reminder_worker())
 
@@ -140,7 +169,7 @@ async def auth_rate_limit(request, call_next):
     return await call_next(request)
 
 bearer = HTTPBearer(auto_error=False)
-UPLOAD_ROOT = Path(__file__).resolve().parent.parent / "data" / "private_uploads"
+UPLOAD_ROOT = Path(settings.upload_root).expanduser() if settings.upload_root else Path(__file__).resolve().parent.parent / "data" / "private_uploads"
 UPLOAD_LIMIT = 25 * 1024 * 1024
 ALLOWED_FILES = {".pdf", ".docx", ".pptx", ".png", ".jpg", ".jpeg", ".webp", ".txt", ".md", ".mp4", ".webm", ".wav", ".mp3", ".m4a", ".mpeg", ".mpga", ".ogg"}
 FRONTEND_FILES = {"", "index.html", "styles.css", "pitch.css", "auth.css", "app.js", "phase2.js"}
@@ -327,7 +356,7 @@ def google_oauth_start(request: Request):
     state = jwt.encode({"purpose": "google_oauth", "nonce": secrets.token_urlsafe(24), "origin": browser_origin,
         "exp": datetime.now(timezone.utc) + timedelta(minutes=10)}, settings.jwt_secret, algorithm="HS256")
     state_claims = jwt.decode(state, settings.jwt_secret, algorithms=["HS256"])
-    query = urlencode({"client_id": settings.google_client_id, "redirect_uri": settings.google_redirect_uri, "response_type": "code",
+    query = urlencode({"client_id": settings.google_client_id, "redirect_uri": settings.effective_google_redirect_uri, "response_type": "code",
         "scope": "openid email profile", "state": state, "nonce": state_claims["nonce"], "prompt": "select_account"})
     return RedirectResponse(f"https://accounts.google.com/o/oauth2/v2/auth?{query}", status_code=302)
 
@@ -350,7 +379,7 @@ async def google_oauth_callback(code: str = "", state: str = "", error: str = ""
     try:
         async with httpx.AsyncClient(timeout=20, trust_env=False) as client:
             token_response = await client.post("https://oauth2.googleapis.com/token", data={"code": code, "client_id": settings.google_client_id,
-                "client_secret": settings.google_client_secret, "redirect_uri": settings.google_redirect_uri, "grant_type": "authorization_code"})
+                "client_secret": settings.google_client_secret, "redirect_uri": settings.effective_google_redirect_uri, "grant_type": "authorization_code"})
             if token_response.status_code >= 400:
                 raise HTTPException(401, "Google sign-in was rejected")
             id_token = token_response.json().get("id_token", "")
