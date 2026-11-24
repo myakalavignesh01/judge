@@ -109,7 +109,10 @@ def provision_initial_organizer() -> None:
     name = settings.bootstrap_organizer_name.strip()
     email = settings.bootstrap_organizer_email.strip().lower()
     password = settings.bootstrap_organizer_password
-    if not name and not email and not password:
+    # Render's free demo doesn't bootstrap an organizer. Keep the public app
+    # available for participant email/password signup when both private values
+    # are unset; reject only a partially configured bootstrap account.
+    if not email and not password:
         return
     if not name or not email or len(password) < 10:
         raise RuntimeError("Set all BOOTSTRAP_ORGANIZER_* values and use a password of at least 10 characters.")
