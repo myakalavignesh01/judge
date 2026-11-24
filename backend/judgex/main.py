@@ -117,8 +117,23 @@ def provision_initial_organizer() -> None:
     if not name or not email or len(password) < 10:
         raise RuntimeError("Set all BOOTSTRAP_ORGANIZER_* values and use a password of at least 10 characters.")
     with SessionLocal() as db:
-        existing = db.scalar(select(User.id).where(User.email == email))
+        existing = db.scalar(select(User).where(User.email == email))
         if existing:
+            # Promote only the account named in private deployment settings, and only
+            # when its configured JudgeX password matches the existing account.
+            if existing.role == "participant" and not db.scalar(
+                select(User.id).where(User.role.in_(("organizer", "super_admin")))
+            ) and verify_password(password, existing.password_hash):
+                institution_name = settings.bootstrap_organizer_institution.strip() or "JudgeX"
+                institution = db.scalar(select(Institution).where(Institution.name == institution_name))
+                if institution is None:
+                    institution = Institution(name=institution_name)
+                    db.add(institution)
+                    db.flush()
+                existing.role = "organizer"
+                existing.institution_id = institution.id
+                audit(db, existing, "account.initial_organizer_promoted", "user", existing.id)
+                db.commit()
             return
         if db.scalar(select(User.id).where(User.role.in_(("organizer", "super_admin")))):
             return
