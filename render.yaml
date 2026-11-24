@@ -31,14 +31,6 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: ALLOW_ORGANIZER_SIGNUP
         value: "false"
-      - key: BOOTSTRAP_ORGANIZER_NAME
-        value: Organizer
-      - key: BOOTSTRAP_ORGANIZER_EMAIL
-        sync: false
-      - key: BOOTSTRAP_ORGANIZER_INSTITUTION
-        value: JudgeX
-      - key: BOOTSTRAP_ORGANIZER_PASSWORD
-        sync: false
 
 databases:
   - name: judgex-db
